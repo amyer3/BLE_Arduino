@@ -1,5 +1,4 @@
 #include <bluefruit.h>
-#include "pitches.h"
 
 BLEUart bleuart;
 
@@ -10,27 +9,20 @@ void    printHex   (const uint8_t * data, const uint32_t numBytes);
 
 int led = 9;           // the PWM pin the LED is attached to
 int brightness = 0;    // how bright the LED is
-int fadeAmount = 5;    // how many points to fade the LED by
+int fadeAmount = 10;    // how many points to fade the LED by
 // Packet buffer
 extern uint8_t packetbuffer[];
 
-#define LED         15
-#define SPEAKER     12
-#define VIB_MOTOR   30
-
-int melody[]= {
-  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
-};
-int noteDurations[]={
-  4, 8, 8, 4, 4, 4, 4, 4
-};
-int arrayLen = sizeof(melody);
+#define LED         7
+#define SPEAKER     27
+#define VIB_MOTOR   16
+#define BUTTON      30
 
 void setup(void)
 {
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setName("MS Prototype Munnie");
 
   // Configure and start the BLE Uart service
   bleuart.begin();
@@ -52,8 +44,10 @@ void setupAdv(void)
   pinMode(LED, OUTPUT);
   pinMode(VIB_MOTOR, OUTPUT);
   pinMode(SPEAKER, OUTPUT);
+  pinMode(BUTTON, INPUT);
   digitalWrite(LED, LOW);
   digitalWrite(VIB_MOTOR, LOW);
+  digitalWrite(SPEAKER, LOW);
 }
 
 
@@ -70,52 +64,79 @@ void loop(void)
     if (pressed) {
       switch (buttnum) {
         case 1:
-          // makes the light blink fast
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 7; i++) {
             digitalWrite(LED, HIGH);
-            delay(100);
+            delay(50);
             digitalWrite(LED, LOW);
-            delay(100);
+            delay(50);
           }
           break;
 
         case 2:
-          // make the light blink fade in-out
-          for (int k = 0; k >= 4; k + 1) {
-            fade();
+          for (int k = 0; k <= 4; k++) {
+            for (int fIN = 0; fIN <= 24; fIN++) {
+              fadeIN();
+              delay(30);
+            }
+            for (int fOUT = 0; fOUT <= 24; fOUT++) {
+              fadeOUT();
+              delay(30);
+            }
+
           }
+          digitalWrite(LED, LOW);
+          brightness = 0;
           break;
 
         case 3:
-          // makes the speaker play noise
-          for (int thisNote =0; thisNote < arrayLen; thisNote++){
-            int dur = 1000/noteDurations[thisNote];
-            tone(SPEAKER, melody[thisNote];
-            int pause = dur * 1.30;
-            delay(pause);
-            noTone(SPEAKER);
-          }
+          buzz(9, 15);
           break;
 
         case 4:
-          // makes the vibration motor go
-          for (int i = 0; i <= 10; i++) {
-            analogWrite(VIB_MOTOR, 255);
-            delay(100);
-            analogWrite(VIB_MOTOR, 0);
-            delay(100);
-          }
+          vibrate(3, 1000);
           break;
       }
     }
   }
-}
-void fade() {
-  analogWrite(LED, brightness);
-  brightness = brightness + fadeAmount;
-  if (brightness <= 0 || brightness >= 255) {
-    fadeAmount = -fadeAmount;
+  if (digitalRead(BUTTON == HIGH)) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);
   }
-  delay(30);
 }
+void fadeIN() {
+
+  int bght = brightness + fadeAmount;
+  analogWrite(LED, bght);
+  brightness = bght;
+}
+
+void fadeOUT() {
+  int bght = brightness - fadeAmount;
+  analogWrite(LED, bght);
+  brightness = bght;
+}
+
+void buzz(int times, int pause) {
+  for (int i = 0; i < times; i++) {
+    analogWrite(SPEAKER, 127);
+    delay(pause);
+    analogWrite(SPEAKER, 0);
+    delay(pause);
+    analogWrite(SPEAKER, 255);
+    delay(pause);
+    analogWrite(SPEAKER, 0);
+  }
+}
+
+void vibrate(int times, int pause) {
+  for (int i = 0; i <= times; i++) {
+    analogWrite(VIB_MOTOR, 255);
+    delay(pause);
+    analogWrite(VIB_MOTOR, 0);
+    delay(pause);
+  }
+}
+
+
 
