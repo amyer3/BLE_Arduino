@@ -7,7 +7,6 @@ uint8_t readPacket (BLEUart *ble_uart, uint16_t timeout);
 float   parsefloat (uint8_t *buffer);
 void    printHex   (const uint8_t * data, const uint32_t numBytes);
 
-int led = 9;           // the PWM pin the LED is attached to
 int brightness = 0;    // how bright the LED is
 int fadeAmount = 10;    // how many points to fade the LED by
 // Packet buffer
