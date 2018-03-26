@@ -130,9 +130,9 @@ void buzz(int times, int pause) {
 
 void vibrate(int times, int pause) {
   for (int i = 0; i <= times; i++) {
-    analogWrite(VIB_MOTOR, 255);
+    digitalWrite(VIB_MOTOR, HIGH);
     delay(pause);
-    analogWrite(VIB_MOTOR, 0);
+    digitalWrite(VIB_MOTOR, LOW);
     delay(pause);
   }
 }
